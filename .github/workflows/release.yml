@@ -33,7 +33,7 @@ jobs:
       # can produce a diff against the previous tag.
       # -----------------------------------------------------------------
       - name: Checkout tag
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           ref: ${{ github.event.inputs.tag || github.ref }}
           fetch-depth: 0
