@@ -157,12 +157,12 @@ dependencies {
     implementation("com.google.ai.edge.litertlm:litertlm-android:0.13.1")
 
     // Ktor for HTTP server
-    implementation("io.ktor:ktor-server-core:3.5.0")
-    implementation("io.ktor:ktor-server-cio:3.5.0")
-    implementation("io.ktor:ktor-server-content-negotiation:3.5.0")
-    implementation("io.ktor:ktor-serialization-kotlinx-json:3.5.0")
-    implementation("io.ktor:ktor-server-cors:3.5.0")
-    implementation("io.ktor:ktor-server-status-pages:3.5.0")
+    implementation("io.ktor:ktor-server-core:3.5.1")
+    implementation("io.ktor:ktor-server-cio:3.5.1")
+    implementation("io.ktor:ktor-server-content-negotiation:3.5.1")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:3.5.1")
+    implementation("io.ktor:ktor-server-cors:3.5.1")
+    implementation("io.ktor:ktor-server-status-pages:3.5.1")
 
     // Coroutines — we deliberately use the latest stable for the newest
     // dispatcher work-stealing improvements (better core utilisation).
