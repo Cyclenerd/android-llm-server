@@ -176,7 +176,7 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-process:2.11.0")
 
     // Jetpack Compose
-    val composeBom = platform("androidx.compose:compose-bom:2026.06.00")
+    val composeBom = platform("androidx.compose:compose-bom:2026.06.01")
     implementation(composeBom)
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
@@ -188,7 +188,7 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.11.0")
     implementation("androidx.navigation:navigation-compose:2.9.8")
     debugImplementation("androidx.compose.ui:ui-tooling")
-    debugImplementation("androidx.compose.ui:ui-test-manifest:1.11.3")
+    debugImplementation("androidx.compose.ui:ui-test-manifest:1.11.4")
 
     // Core Android
     implementation("androidx.core:core-ktx:1.19.0")
@@ -225,7 +225,7 @@ dependencies {
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
 
     debugImplementation("androidx.compose.ui:ui-tooling")
-    debugImplementation("androidx.compose.ui:ui-test-manifest:1.11.3")
+    debugImplementation("androidx.compose.ui:ui-test-manifest:1.11.4")
 }
 
 // Configure Kotlin to target JVM 21 with optimisations:
