@@ -154,7 +154,7 @@ ktlint {
 
 dependencies {
     // LiteRT-LM for inference (pinned to latest for newest GPU/NPU kernels).
-    implementation("com.google.ai.edge.litertlm:litertlm-android:0.14.0")
+    implementation("com.google.ai.edge.litertlm:litertlm-android:0.15.0")
 
     // Ktor for HTTP server
     implementation("io.ktor:ktor-server-core:3.5.1")
