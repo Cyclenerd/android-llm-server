@@ -207,7 +207,7 @@ dependencies {
     implementation("androidx.profileinstaller:profileinstaller:1.4.1")
     // androidx.tracing — zero-overhead tracing markers. Enables Perfetto /
     // Android Studio CPU profiler to attribute time to specific call sites.
-    implementation("androidx.tracing:tracing-ktx:1.3.0")
+    implementation("androidx.tracing:tracing-ktx:2.0.0")
 
     // DataStore for preferences
     implementation("androidx.datastore:datastore-preferences:1.2.1")
