@@ -114,16 +114,18 @@ object BackendSelector {
     fun buildFallbackChain(primary: Selection): List<Selection> {
         val ordered = mutableListOf(primary)
         if (primary.type is AccelerationType.NPU) {
-            ordered += Selection(
-                AccelerationType.GPU,
-                reason = "Fallback after NPU failure",
-            )
+            ordered +=
+                Selection(
+                    AccelerationType.GPU,
+                    reason = "Fallback after NPU failure",
+                )
         }
         if (ordered.none { it.type is AccelerationType.CPU }) {
-            ordered += Selection(
-                AccelerationType.CPU,
-                reason = "Final CPU fallback (always works)",
-            )
+            ordered +=
+                Selection(
+                    AccelerationType.CPU,
+                    reason = "Final CPU fallback (always works)",
+                )
         }
         return ordered
     }
