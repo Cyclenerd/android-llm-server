@@ -69,6 +69,65 @@ object BackendSelector {
         return Selection(AccelerationType.CPU, reason = "GPU/NPU unavailable, CPU fallback")
     }
 
+    /**
+     * Ordered list of backends to try, best-first, each with a fallback.
+     *
+     * The [select] heuristics are optimistic: they pick NPU whenever the
+     * device *hardware* looks capable. But whether a backend actually works
+     * also depends on the **model file**. For example, the Google Tensor NPU
+     * path requires the `.litertlm` model to embed NPU-precompiled artifacts
+     * (the `TF_LITE_AUX` section). Standard CPU/GPU Gemma models do not, so
+     * creating an NPU engine on a Pixel 9 Pro throws:
+     *
+     *     NOT_FOUND: TF_LITE_AUX not found in the model
+     *
+     * We can't know this until we actually try to initialize the engine, so
+     * the caller should walk this list and fall back to the next backend on
+     * any initialization failure. GPU works on virtually every device and
+     * with every model; CPU always works. This guarantees the server comes
+     * up instead of surfacing a fatal "Server Error".
+     *
+     * @param context Application context (used to find native lib dir).
+     * @param preferNpu If false, NPU is skipped entirely.
+     * @return Backends to try in order. Always ends with CPU.
+     */
+    fun candidates(
+        context: Context,
+        preferNpu: Boolean = true,
+    ): List<Selection> = buildFallbackChain(select(context, preferNpu))
+
+    /**
+     * Build the ordered try-list from a chosen primary [Selection].
+     *
+     * Guarantees:
+     *  - The primary selection is always first.
+     *  - CPU is always present and always last (guaranteed to work).
+     *  - GPU is inserted as an intermediate fallback when the primary is NPU
+     *    (NPU is the only backend that commonly fails after GPU would still
+     *    succeed). If the primary is already GPU or CPU we don't add GPU:
+     *    a CPU primary means the device had no usable GPU/NPU in the first
+     *    place, so retrying GPU is pointless.
+     *  - No duplicate backend types.
+     *
+     * Pure function (no Android dependencies) so it can be unit-tested.
+     */
+    fun buildFallbackChain(primary: Selection): List<Selection> {
+        val ordered = mutableListOf(primary)
+        if (primary.type is AccelerationType.NPU) {
+            ordered += Selection(
+                AccelerationType.GPU,
+                reason = "Fallback after NPU failure",
+            )
+        }
+        if (ordered.none { it.type is AccelerationType.CPU }) {
+            ordered += Selection(
+                AccelerationType.CPU,
+                reason = "Final CPU fallback (always works)",
+            )
+        }
+        return ordered
+    }
+
     // ---------------------------------------------------------------------
     // NPU detection
     // ---------------------------------------------------------------------

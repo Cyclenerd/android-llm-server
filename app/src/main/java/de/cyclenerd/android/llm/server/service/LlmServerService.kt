@@ -120,25 +120,21 @@ class LlmServerService : Service() {
             check(localIps.isNotEmpty()) { "No local IP addresses found" }
             Logger.i(TAG, "Network OK: $localIps")
 
-            // ---------------------------------------------------------
-            // Pick the fastest backend the device supports.
-            // ---------------------------------------------------------
-            val selection = BackendSelector.select(applicationContext)
-            Logger.i(TAG, "Inference backend: ${selection.type.javaClass.simpleName} — ${selection.reason}")
-
             val modelPath = getModelPath()
             val modelName = File(modelPath).nameWithoutExtension
 
-            llmEngine =
-                LlmEngine(
-                    modelPath = modelPath,
-                    cacheDir = cacheDir.path,
-                    accelerationType = selection.type,
-                    warmUp = true,
-                )
-
-            llmEngine.initialize()
-            Logger.i(TAG, "LiteRT engine initialized & warmed up")
+            // ---------------------------------------------------------
+            // Pick the fastest backend the device supports, then fall back
+            // gracefully if it fails to initialize.
+            //
+            // Backend selection is optimistic (e.g. it picks NPU on any
+            // Pixel), but whether a backend actually loads depends on the
+            // model file too. A CPU/GPU Gemma model has no NPU artifacts, so
+            // the Tensor NPU path throws "TF_LITE_AUX not found in the model".
+            // Rather than surfacing that as a fatal error, we walk NPU→GPU→CPU
+            // until one initializes successfully.
+            // ---------------------------------------------------------
+            llmEngine = initializeEngineWithFallback(modelPath)
 
             Logger.i(TAG, "Starting Ktor server…")
             ktorServer =
@@ -163,6 +159,69 @@ class LlmServerService : Service() {
             updateState(runningState)
             startUptimeCounter()
         }
+    }
+
+    /**
+     * Bring up an [LlmEngine], trying each backend from
+     * [BackendSelector.candidates] in order until one initializes.
+     *
+     * Some backends can only fail at engine-creation time (e.g. selecting the
+     * Tensor NPU for a model that lacks NPU artifacts throws
+     * `NOT_FOUND: TF_LITE_AUX not found in the model`). When that happens we
+     * downgrade to the next backend instead of failing the whole service.
+     *
+     * @throws IllegalStateException if every candidate backend fails.
+     */
+    private suspend fun initializeEngineWithFallback(modelPath: String): LlmEngine {
+        val candidates = BackendSelector.candidates(applicationContext)
+        var lastError: Throwable? = null
+
+        for ((index, selection) in candidates.withIndex()) {
+            val backendName = selection.type.javaClass.simpleName
+            Logger.i(
+                TAG,
+                "Trying inference backend ${index + 1}/${candidates.size}: $backendName — ${selection.reason}",
+            )
+
+            val engine =
+                LlmEngine(
+                    modelPath = modelPath,
+                    cacheDir = cacheDir.path,
+                    accelerationType = selection.type,
+                    warmUp = true,
+                )
+
+            try {
+                engine.initialize()
+                Logger.i(TAG, "LiteRT engine initialized & warmed up on $backendName backend")
+                return engine
+            } catch (t: Throwable) {
+                // Out of memory won't be solved by switching backend — the
+                // model is simply too large for this device. Fail fast.
+                // LlmEngine wraps OutOfMemoryError in an IllegalStateException,
+                // so check the cause chain too.
+                if (t is OutOfMemoryError || t.cause is OutOfMemoryError) {
+                    runCatching { engine.shutdown() }
+                    throw IllegalStateException("Out of memory: model too large for device", t)
+                }
+                lastError = t
+                runCatching { engine.shutdown() }
+                val isLast = index == candidates.lastIndex
+                if (isLast) {
+                    Logger.e(TAG, "Backend $backendName failed and no fallback remains", t)
+                } else {
+                    Logger.w(
+                        TAG,
+                        "Backend $backendName failed (${t.message}); falling back to next backend",
+                    )
+                }
+            }
+        }
+
+        throw IllegalStateException(
+            "Failed to initialize inference engine on all backends: ${lastError?.message}",
+            lastError,
+        )
     }
 
     private suspend fun stopServer() {
