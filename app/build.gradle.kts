@@ -216,7 +216,7 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.11.0")
     testImplementation("io.mockk:mockk:1.14.11")
-    testImplementation("org.mockito:mockito-core:5.23.0")
+    testImplementation("org.mockito:mockito-core:5.24.0")
     testImplementation("org.mockito:mockito-inline:5.2.0")
 
     androidTestImplementation("androidx.test.ext:junit:1.3.0")
