@@ -191,7 +191,7 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-test-manifest:1.11.4")
 
     // Core Android
-    implementation("androidx.core:core-ktx:1.19.0")
+    implementation("androidx.core:core-ktx:1.19.1")
     implementation("androidx.appcompat:appcompat:1.8.0")
     implementation("androidx.localbroadcastmanager:localbroadcastmanager:1.1.0")
 
