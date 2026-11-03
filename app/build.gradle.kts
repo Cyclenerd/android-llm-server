@@ -210,7 +210,7 @@ dependencies {
     implementation("androidx.tracing:tracing-ktx:2.0.4")
 
     // DataStore for preferences
-    implementation("androidx.datastore:datastore-preferences:1.2.1")
+    implementation("androidx.datastore:datastore-preferences:1.3.0")
 
     // Testing
     testImplementation("junit:junit:4.13.2")
