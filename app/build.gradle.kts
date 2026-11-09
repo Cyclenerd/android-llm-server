@@ -167,7 +167,7 @@ dependencies {
     // Coroutines — we deliberately use the latest stable for the newest
     // dispatcher work-stealing improvements (better core utilisation).
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.12.0")
 
     // Lifecycle & ViewModel
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.11.0")
